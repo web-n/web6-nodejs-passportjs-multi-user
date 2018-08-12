@@ -4,7 +4,7 @@ var path = require('path');
 var fs = require('fs');
 var sanitizeHtml = require('sanitize-html');
 var template = require('../lib/template.js');
-
+var shortid = require('shortid');
 
 var low = require('lowdb');
 var FileSync = require('lowdb/adapters/FileSync');
@@ -71,12 +71,18 @@ module.exports = function (passport) {
     var pwd = post.pwd;
     var pwd2 = post.pwd2;
     var displayName = post.displayName;
-    db.get('users').push({
-      email:email,
-      password:pwd,
-      displayName:displayName
-    }).write();
-    response.redirect('/');
+    if(pwd !== pwd2){
+      request.flash('error', 'Password must same!');
+      response.redirect('/auth/register');
+    } else {
+      db.get('users').push({
+        id:shortid.generate(),
+        email:email,
+        password:pwd,
+        displayName:displayName
+      }).write();
+      response.redirect('/');
+    }
   });
 
   router.get('/logout', function (request, response) {
